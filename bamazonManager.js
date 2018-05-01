@@ -1,13 +1,15 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql")
+var dotenv = require('dotenv').config()
 
 var connection = mysql.createConnection({
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
     host: "localhost",
     port: 3306,
-    user: "root",
-    password: "b4ca81n!",
     database: "bamazon"
 });
+
 
 var app = {
     initialize: function () {
