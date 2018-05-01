@@ -32,37 +32,56 @@ var app = {
 
         });
     },
-    ask: function(){
+    ask: function () {
         inquirer.prompt([{
             type: "input",
             message: "What is the ID of the item you wish to purchase?",
             name: "item"
-        },{
+        }, {
             type: "input",
             message: "What quantity do you wish to purchase?",
             name: "quantity"
-        }]).then(function(inquirerResponse){
-            connection.query("SELECT stock_quantity FROM products WHERE ?",{item_id: inquirerResponse.item}, function (err, res) {
+        }]).then(function (inquirerResponse) {
+            connection.query("SELECT stock_quantity, price FROM products WHERE ?", { item_id: inquirerResponse.item }, function (err, res) {
                 if (err) throw err;
                 // console.log(res);
-                if(inquirerResponse.quantity > res[0].stock_quantity){
+                var requested = parseInt(inquirerResponse.quantity)
+                var stock = parseInt(res[0].stock_quantity)
+                if (requested > stock) {
                     console.log("Sorry there is insufficent supply in stock")
                     console.log("You will now be redirected to the home page")
                     app.initialize()
+
                 } else {
                     var updatedQuantity = parseInt(res[0].stock_quantity - inquirerResponse.quantity)
-                    connection.query("UPDATE products SET ? WHERE ?",[{stock_quantity: updatedQuantity},{item_id: inquirerResponse.item}], function (err, res) {
+                    connection.query("UPDATE products SET ? WHERE ?", [{ stock_quantity: updatedQuantity }, { item_id: inquirerResponse.item }], function (err, res2) {
                         if (err) throw err;
                         // console.log(res);
-                        console.log()
-            
+                        console.log("Your purchase will be $" + (inquirerResponse.quantity * res[0].price))
+                        app.againPrompt()
                     });
                 }
             });
 
         })
+    },
+    againPrompt: function () {
+        inquirer.prompt([{
+            type: "list",
+            message: "Would you like to buy something else?",
+            choices: ["Yes", "No"],
+            name: "again"
+        }]).then(function (inquirerResponse) {
+            if (inquirerResponse.again === "Yes") {
+                app.initialize()
+            } else {
+                connection.end()
+                console.log("=============================")
+                console.log("          Goodbye!!");
+                console.log("=============================")
+            }
+        });
     }
-
 }
 
 app.initialize()
