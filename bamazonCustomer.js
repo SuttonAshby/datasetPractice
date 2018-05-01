@@ -53,7 +53,7 @@ var app = {
                     app.initialize()
 
                 } else {
-                    var updatedQuantity = parseInt(res[0].stock_quantity - inquirerResponse.quantity)
+                    var updatedQuantity = parseInt(res[0].stock_quantity) - parseInt(inquirerResponse.quantity)
                     connection.query("UPDATE products SET ? WHERE ?", [{ stock_quantity: updatedQuantity }, { item_id: inquirerResponse.item }], function (err, res2) {
                         if (err) throw err;
                         // console.log(res);
